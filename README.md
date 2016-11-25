@@ -31,6 +31,7 @@ Just writing Javascript won't put it on the robot. You should write the JS in th
 Try pressing `Clear vars`.
 ### Cannot connect
 Ensure:
+
 1. The robot controller phone connected is to the same WIFI network as the computer.
 2. Someone pressed the play button on the robot controller.
 3. TCP connections are not blocked over your network.
