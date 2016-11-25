@@ -24,11 +24,9 @@ function start() {
 }
 
 function loop() {
-	mecanum(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x);
-}
-
-function mecanum(forward, turn, strafe) {
-	Packages.org.firstinspires.ftc.teamcode.Mecanum.arcade(damp(forward, tol), damp(turn, tol), damp(-strafe, tol), left_front, right_front, left_back, right_back);
+	forAllMotors(function(self) {
+		self.setPower(damp(gamepad1.left_stick_x, 0.05));
+	});
 }
 
 function damp(val, tol) {
