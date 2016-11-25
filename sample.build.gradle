@@ -1,0 +1,11 @@
+//--------------------------------------------------------------------------
+//This is a SAMPLE file, not a real one. It is an example for how to modify
+//your team's build.gradle under the TeamCode directory in order to function
+//properly. Note that you will actually have to add the rhino-x.x.x.x.jar
+//file yourself.
+//-------------------------------------------------------------------------
+apply from: '../build.common.gradle'
+dependencies {
+    compile files('../libs/rhino-1.7.7.1.jar') // <-- This is the important line
+    compile project(':ftc-nav')
+}
