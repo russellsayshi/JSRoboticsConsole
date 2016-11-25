@@ -25,3 +25,12 @@ The bottom panel (aka text area) allows you to enter some code, and then immedia
 The right panel is split into two parts: the console and the action buttons. The console just displays output, it's self explanatory. The action buttons allow you to send the centerpanel Javascipt to the robot, and then initialize, and start the opmode. It also can clear all variables, etc.
 #### Important
 Just writing Javascript won't put it on the robot. You should write the JS in the center panel, then choose `Send`, `Init`, and `Start` in the right action buttons to get it going.
+
+## Issues & Fixes
+### Gamepad doesn't work
+Try pressing `Clear vars`.
+### Cannot connect
+Ensure:
+1. The robot controller phone connected is to the same WIFI network as the computer.
+2. Someone pressed the play button on the robot controller.
+3. TCP connections are not blocked over your network.
