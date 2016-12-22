@@ -22,7 +22,7 @@ public class Client {
     private JSplitPane jsp;
     private JButton startStopBtn;
     private Map<String, MotorComponent> motors = new HashMap<>();
-    private static final double EXPECTED_SERVER_VERSION = 1.2;
+    private static final double EXPECTED_SERVER_VERSION = 1.3;
     private static final String MOTOR_SAVE_EXTENSION = ".mcsave";
     private static final String NORMAL_SAVE_EXTENSION = ".robojs";
     public Client() {
@@ -193,6 +193,7 @@ public class Client {
         LINE_OUTPUT,
         ERROR,
         SINGLE_ERROR,
+        PRINT,
         NONE
     }
     private DataType[] dataTypeValues = DataType.values();
@@ -246,6 +247,9 @@ public class Client {
                                 break;
                             case SINGLE_ERROR:
                                 logError(message);
+                                break;
+                            case PRINT:
+                                logPrint(message);
                                 break;
                         }
                     }
@@ -379,6 +383,11 @@ public class Client {
     
     private void log(String msg) {
         coloredLog(msg, Color.BLACK);
+    }
+    
+    private static final Color printColor = new Color(69, 88, 119);
+    private void logPrint(String msg) {
+        coloredLog(msg, printColor);
     }
     
     private void coloredLog(String msg, Color c)

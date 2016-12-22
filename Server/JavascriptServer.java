@@ -44,6 +44,7 @@ public class JavascriptServer extends OpMode {
         LINE_OUTPUT,
         ERROR,
         SINGLE_ERROR,
+        PRINT,
         NONE
     }
     private DataType[] dataTypeValues = DataType.values();
@@ -82,7 +83,7 @@ public class JavascriptServer extends OpMode {
     private static volatile Thread scriptThread;
     private static volatile ServerThread serverThreadObj;
     private static volatile ScriptThread scriptThreadObj;
-    private static final double VERSION_NUMBER = 1.2;
+    private static final double VERSION_NUMBER = 1.3;
     private static final Object lock = new Object();
     private ThreadSafeData<Boolean> isLooping = new ThreadSafeData<>();
 
@@ -204,12 +205,23 @@ public class JavascriptServer extends OpMode {
                 ScriptableObject.putProperty(scope, "gamepad1", Context.javaToJS(gamepad1, scope));
                 ScriptableObject.putProperty(scope, "gamepad2", Context.javaToJS(gamepad2, scope));
                 ScriptableObject.putProperty(scope, "hardwareMap", Context.javaToJS(hardwareMap, scope));
+                ScriptableObject.putProperty(scope, "server", Context.javaToJS(new ClientCodeUtilities(), scope));
             }
         }
 
         public void clearContext() {
             Context.exit();
             createContext();
+        }
+    }
+    
+    public class ClientCodeUtilities {
+        public void print(String msg) {
+            try {
+                JavascriptServer.this.serverThreadObj.writeStringToClient(DataOutputType.PRINT, msg);
+            } catch(IOException ioe) {
+                log(ioe.getMessage());
+            }
         }
     }
 
@@ -219,8 +231,7 @@ public class JavascriptServer extends OpMode {
         private DataInputStream inFromClient; //no other threads should ever touch this
         private DataOutputStream outToClient; //ditto above
         private final Object socketLock = new Object();
-        private ArrayList<String> queuedErrors = new ArrayList<>();
-        private final Object queuedErrorsLock = new Object();
+        private final Object writeLock = new Object();
         private ScriptThread script;
 
         public ServerThread(ScriptThread script) {
@@ -232,7 +243,9 @@ public class JavascriptServer extends OpMode {
             while(!Thread.currentThread().isInterrupted()) {
                 try {
                     createServer();
-                    outToClient.writeDouble(VERSION_NUMBER); //handshake
+                    synchronized(writeLock) {
+                        outToClient.writeDouble(VERSION_NUMBER); //handshake
+                    }
                     while(!Thread.currentThread().isInterrupted()) {
                         //server loop
                         DataType type = intToDataType(inFromClient.readInt());
@@ -249,7 +262,7 @@ public class JavascriptServer extends OpMode {
                                 DcMotor motor = hardwareMap.dcMotor.get(bufferStr);
                                 if(motor == null) {
                                     log("Motor not found: " + bufferStr);
-                                    writeStringToClient(DataOutputType.SINGLE_ERROR, "Motor not found: " + bufferStr);
+                                    writeErrorString("Motor not found: " + bufferStr);
                                 } else {
                                     motor.setPower(power);
                                 }
@@ -311,31 +324,23 @@ public class JavascriptServer extends OpMode {
                                 break;
                             case START:
                                 if(!callFunction("start")) {
-                                    addToQueuedErrors("Unable to call \"start\".");
+                                    writeErrorString("Unable to call \"start\".");
                                 }
                                 isLooping.setValue(true);
                                 break;
                             case STOP:
                                 isLooping.setValue(false);
                                 if(!callFunction("stop")) {
-                                    addToQueuedErrors("Unable to call \"stop\".");
+                                    writeErrorString("Unable to call \"stop\".");
                                 }
                                 break;
                             case INIT:
                                 isLooping.setValue(false);
                                 if(!callFunction("init")) {
-                                    addToQueuedErrors("Unable to call \"init\".");
-                                    System.out.println(queuedErrors);
+                                    writeErrorString("Unable to call \"init\".");
+                                    //System.out.println(queuedErrors);
                                 }
                                 break;
-                        }
-
-                        //check for any queued errors and write them
-                        synchronized(queuedErrorsLock) {
-                            for(String s : queuedErrors) {
-                                writeStringToClient(DataOutputType.SINGLE_ERROR, s);
-                            }
-                            queuedErrors.clear();
                         }
                     }
                 } catch(IOException ioe) {
@@ -345,23 +350,29 @@ public class JavascriptServer extends OpMode {
                 }
             }
         }
-
-        private void writeErrorToClient(RhinoException error) throws IOException {
-            outToClient.writeInt(DataOutputType.ERROR.ordinal());
-            outToClient.writeUTF(error.getMessage());
-            outToClient.writeUTF(error.getScriptStackTrace());
-            outToClient.writeInt(error.lineNumber());
-            outToClient.writeInt(error.columnNumber());
+        
+        public void writeErrorString(String error) {
+            try {
+                writeStringToClient(DataOutputType.SINGLE_ERROR, error);
+            } catch(IOException ioe) {
+                log("Couldn't write error: " + ioe.getMessage());
+            }
         }
 
-        private void writeStringToClient(DataOutputType type, String str) throws IOException {
-            outToClient.writeInt(type.ordinal());
-            outToClient.writeUTF(str);
+        public void writeErrorToClient(RhinoException error) throws IOException {
+            synchronized(writeLock) {
+                outToClient.writeInt(DataOutputType.ERROR.ordinal());
+                outToClient.writeUTF(error.getMessage());
+                outToClient.writeUTF(error.getScriptStackTrace());
+                outToClient.writeInt(error.lineNumber());
+                outToClient.writeInt(error.columnNumber());
+            }
         }
 
-        public void addToQueuedErrors(String s) {
-            synchronized(queuedErrorsLock) {
-                queuedErrors.add(s);
+        public void writeStringToClient(DataOutputType type, String str) throws IOException {
+            synchronized(writeLock) {
+                outToClient.writeInt(type.ordinal());
+                outToClient.writeUTF(str);
             }
         }
 
@@ -384,7 +395,8 @@ public class JavascriptServer extends OpMode {
                         public Object call() {
                             return JavascriptServer.this.scriptThreadObj.callFunction(name);
                         }
-                    });
+                    }
+            );
             script.addTask(ft);
             try {
                 String err = (String)ft.get();
@@ -392,11 +404,11 @@ public class JavascriptServer extends OpMode {
                     //success
                     return true;
                 } else {
-                    addToQueuedErrors(err);
+                    writeErrorString(err);
                     return false;
                 }
             } catch(InterruptedException|ExecutionException ie) {
-                addToQueuedErrors(ie.getMessage());
+                writeErrorString(ie.getMessage());
                 return false;
             }
         }
