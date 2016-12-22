@@ -12,7 +12,7 @@ It can take about a minute to upload any code changes from Android Studio to the
 All of the files in the Server directory have comments to explain themselves. Just place them in the appropriate parts of your team's TeamCode directory.
 
 ### Client (computer)
-#### Automatic method (linux only)
+#### Automatic method (Linux only)
 Download and run `installer.bash` in the root directory of this project. The script clones the project itself, so it is not necessary to clone yourself. Simply copy + paste `installer.bash` somewhere onto your system, and run it.
 
 #### Manual method
