@@ -12,8 +12,8 @@ It can take about a minute to upload any code changes from Android Studio to the
 All of the files in the Server directory have comments to explain themselves. Just place them in the appropriate parts of your team's TeamCode directory.
 
 ### Client (computer)
-#### Automatic method
-Download and run `installer.bash` in the root directory of this project. The script clones the project itself, so it is not necessary to clone yourself. Simply copy + paste `installer.bash` somewhere onto your Unix-like system, and run it.
+#### Automatic method (linux only)
+Download and run `installer.bash` in the root directory of this project. The script clones the project itself, so it is not necessary to clone yourself. Simply copy + paste `installer.bash` somewhere onto your system, and run it.
 
 #### Manual method
 As for client, download RSyntaxTextArea from wherever you want, then compile & run the Java files under Client with the RSyntaxTextArea jar in the classpath (it should look something like `javac -cp RSyntaxTextArea.jar;. Client.java && java -cp RSyntaxTextArea.jar;. Client`). It'll ask you for the server hostname when you first run it, enter the IP of the phone running the JavascriptServer opmode (remember they must be on the same WIFI network AND you must have pressed play on the phone) and then it should connect.
