@@ -9,7 +9,8 @@ function init() {
 	right_front = hardwareMap.dcMotor.get("right_front");
 	forAllMotors(function(self) {
 		self.setZeroPowerBehavior(hardware.DcMotor.ZeroPowerBehavior.FLOAT);
-	})
+	});
+	server.print("Initializing."); //how to print
 }
 
 function forAllMotors(operation) {
