@@ -1,3 +1,4 @@
+#!/bin/bash
 #==========================================================
 #    YOU CAN RUN THIS FILE WITHOUT CLONING. JUST
 #    COPY + PASTE INTO A TEXT EDITOR AND RUN ON
