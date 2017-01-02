@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+#!/bin/bash
 #==========================================================
 #    YOU CAN RUN THIS FILE WITHOUT CLONING. JUST
 #    COPY + PASTE INTO A TEXT EDITOR AND RUN ON
@@ -543,4 +543,3 @@ echo "that allows re-running this file. Do not run this install"
 echo "script again."
 echo "==========================================================="
 "$_java" -cp rsta.jar:. Client
->>>>>>> e5d17d2ece0373efa5ef439705185c27eeac0707
