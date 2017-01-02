@@ -4,6 +4,7 @@
 #    COPY + PASTE INTO A TEXT EDITOR AND RUN ON
 #    A UNIX-LIKE SYSTEM.
 #==========================================================
+#e.g. wget https://raw.githubusercontent.com/russellsayshi/JSRoboticsConsole/master/installer.bash && bash installer.bash
 
 bold () {
     echo -ne "\e[1m"
