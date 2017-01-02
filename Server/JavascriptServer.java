@@ -83,7 +83,7 @@ public class JavascriptServer extends OpMode {
     private static volatile Thread scriptThread;
     private static volatile ServerThread serverThreadObj;
     private static volatile ScriptThread scriptThreadObj;
-    private static final double VERSION_NUMBER = 1.3;
+    private static final double VERSION_NUMBER = 1.4;
     private static final Object lock = new Object();
     private ThreadSafeData<Boolean> isLooping = new ThreadSafeData<>();
 
@@ -219,8 +219,11 @@ public class JavascriptServer extends OpMode {
         public void print(String msg) {
             try {
                 JavascriptServer.this.serverThreadObj.writeStringToClient(DataOutputType.PRINT, msg);
+                Thread.sleep(10); //to not spam the server
             } catch(IOException ioe) {
                 log(ioe.getMessage());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -444,7 +447,7 @@ public class JavascriptServer extends OpMode {
 
     private void smallDelay() {
         try {
-            Thread.sleep(100);
+            Thread.sleep(10);
         } catch(InterruptedException ie) {
             log("Interrupted.");
         }
@@ -456,6 +459,8 @@ public class JavascriptServer extends OpMode {
             if(!serverThreadObj.callFunction("loop")) {
                 System.out.println("Unable to loop!");
                 smallDelay();
+                isLooping.setValue(false);
+                serverThreadObj.callFunction("stop");
             }
         } else {
             smallDelay();
